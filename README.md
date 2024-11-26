@@ -1,4 +1,4 @@
-# Pet Pal Backend Server v2
+# Pet Pal Backend Server v3
 
 This project is an enhanced version of the backend server [originally developed](https://github.com/Ernest-Low/java-springboot-pet-pal) as part of a group project at NTU. Built using **Java** and **Spring Boot**, this server provides a robust and scalable backend for the **Pet Pal** application. The improvisations in this version focus on improving security, performance, and database handling.
 
