@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "JWT secret key for JWT Token"
+  },
+  {
+    "name": "data.loader.enabled",
+    "type": "java.lang.String",
+    "description": "If set to true, data loader will run"
+  }
+]}

@@ -1,0 +1,197 @@
+RestController -> Service -> Repository -> Database (use DataLoader to preload data)
+
+// API_ENDPOINTS
+#Ernest
+GET     /ownerAuth
+GET     /ownerAuth/{id}
+POST    /ownerAuth
+PUT     /ownerAuth/{id}
+DELETE  /ownerAuth/{id}
+
+#Ernest
+GET     /owner
+GET     /owner/{id}
+POST    /owner
+PUT     /owner/{id}
+DELETE  /owner/{id}
+
+#Keith
+GET     /pet
+GET     /pet/{id}
+POST    /pet
+PUT     /pet/{id}
+DELETE  /pet/{id}
+
+#Jasmine
+GET     /petData
+GET     /petData/{id}
+POST    /petData
+PUT     /petData/{id}
+DELETE  /petData/{id}
+
+#Dexter
+GET     /chatRoom
+GET     /chatRoom/{id}
+POST    /chatRoom
+PUT     /chatRoom/{id}
+DELETE  /chatRoom/{id}
+
+#Dexter
+GET     /chatMessage
+GET     /chatMessage/{id}
+POST    /chatMessage
+PUT     /chatMessage/{id}
+DELETE  /chatMessage/{id}
+
+
+
+// ENTITIES
+@Entity
+OwnerAuth.java
+{
+    "id": Long,
+    "email": String,
+    "password": String,
+    "ownerId": Long
+}
+
+
+@Entity
+Owner.java
+{
+    "id": Long,
+    "name": String,
+    "ownerMatches": List<Owner>,    // Owner.id
+    "areaLocation": String,
+    "ownerAuth": OwnerAuth,         // @OneToOne
+    "pets": List<Pet>               // @OneToMany
+}
+
+
+@Entity
+Pet.java
+{
+    "id": Long,
+    "name": String,
+    "gender": Enum<Gender>,
+    "age": Integer,
+    "isNeutered": boolean,
+    "pictures": List<String>,
+    "description": String,
+    "owner": Owner,                 // @ManyToOne
+    "petData": PetData              // @ManyToOne
+}
+
+
+@Entity
+PetData.java
+{
+    "id": Long,
+    "breed": String,
+    "animalGroup": String,
+    "pet": List<Pet>                // Pet.id
+}
+
+
+@Entity
+ChatRoom.java
+{
+    "id": UUID,
+    "owners": List<Owner>,        // @ManyToMany - Owner.id
+    "chatMessages": List<ChatMessages>
+}
+
+
+@Entity
+ChatMessage.java
+{
+    "id": UUID,
+    "createdTimestamp": LocalDateTime,
+    "updatedTimestamp": LocalDateTime,
+    "message": String,
+    "owner": Owner                  // @ManyToOne - Owner.id
+    "chatRoom": ChatRoom,           // @ManyToOne - ChatRoom.id
+}
+
+
+
+// POJOS
+(Enum) EGender.java
+{
+    MALE, FEMALE
+}
+
+
+DataLoader
+
+
+ErrorResponseDto
+{
+    "timestamp": LocalDateTime,
+    "errorMessage": String
+}
+
+
+GlobalExceptionHandler
+
+
+Exception
+
+
+
+// REFERENCE
+owners
+    Integer id                            -- Primary key, auto-increment
+    String areaLocation                    -- String VarChar 255
+    String name                            -- String VarChar 255
+    String email                        -- String VarChar 255
+    Integer[] ownerMatches                -- Int[]. Do we keep this?
+    ownerAuth                            -- @OneToOne(mappedBy = "owner", cascade = CascadeType.ALL) @JsonManagedReference
+    List<Pet> pets                        -- @OneToMany(mappedBy = "owner, cascade = CascadeType.ALL) @JsonManagedReference
+ownerAuth
+    Integer id                            -- Primary key, auto-increment
+    String password                        -- String VarChar 255
+    owner                                -- @OneToOne    @JoinColumn(name = "owner_id", referencedColumnName = "id") @JsonBackReference
+
+pets
+    Integer id                            -- Primary key, auto-increment
+    petGender gender                    -- Do you want to save this as a String, or maybe a boolean? (0/false for Female, 1/true for Male)
+    String name                            -- String VarChar 255
+    String picture[]                    -- String[] TEXT[] -- or can the cloudinary URL be less than 255 chars?
+    String description                    -- String VarChar 255 (255 character limit), or TEXT (exceedingly long)
+    isNeutered                            -- Boolean
+    owner                                -- @ManyToOne(optional = false) @JsonBackReference
+    breed                                -- @ManyToOne(optional = false) @JsonBackReference
+
+breeds
+    Integer id                            -- Primary key, auto-increment
+    String name                            -- String VarChar 255
+    String type                            -- String VarChar 255 (like cat, dog, etc)
+    List<Pet> pets                        -- @OneToMany(mappedBy = "breed", cascade = cascadeType.ALL) @JsonManagedReference
+
+
+// POSTGRES_SQL_STATEMENTS
+select * from pg_catalog.pg_database;
+select * from pg_catalog.pg_user;
+select * from pg_catalog.pg_tables where tableowner='shopper';
+
+create user crm_admin with password 'crm_password';
+alter table customer owner to crm_admin;
+alter table interaction owner to crm_admin;
+alter database simple_crm owner to crm_admin;
+grant all privileges on database simple_crm to crm_admin;
+grant all privileges on schema public to crm_admin;
+grant all privileges on all tables in schema public to crm_admin;
+grant all privileges on all sequences in schema public to crm_admin;
+alter default privileges for user crm_admin in schema public grant all privileges on tables to crm_admin;
+alter default privileges for user crm_admin in schema public grant all privileges on sequences to crm_admin;
+
+SELECT 'ALTER TABLE '|| schemaname || '.' || tablename ||' OWNER TO my_new_owner;'
+FROM pg_tables WHERE NOT schemaname IN ('pg_catalog', 'information_schema')
+ORDER BY schemaname, tablename;
+
+select current_user;
+-- Need to run this in both crm_admin user and postgres user
+reassign owned by crm_admin to postgres;
+drop owned by crm_admin cascade;
+drop user if exists crm_admin;
