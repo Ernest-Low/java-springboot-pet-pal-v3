@@ -34,8 +34,6 @@ This project is an enhanced version of the backend server [originally developed]
 - **Authentication**: JWT
 - **Build Tool**: Maven
 
-<br>
-<br>
 
 # API Documentation
 
